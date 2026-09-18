@@ -1,0 +1,20 @@
+{
+ "agreement": 0.9573141659179395,
+ "confusion": {
+  "congested": {
+   "congested": 0.8999,
+   "free": 0.0028,
+   "heavy": 0.1016
+  },
+  "free": {
+   "congested": 0.0067,
+   "free": 0.981,
+   "heavy": 0.1426
+  },
+  "heavy": {
+   "congested": 0.0934,
+   "free": 0.0162,
+   "heavy": 0.7557
+  }
+ }
+}

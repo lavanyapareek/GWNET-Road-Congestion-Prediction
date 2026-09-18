@@ -1,0 +1,148 @@
+{
+ "probes": [
+  {
+   "amp": false,
+   "micro_bs": 8,
+   "ms_train": 2958.7517380714417,
+   "mem_gib": 3.06121826171875,
+   "ms_eval_per_window": 21.423810720443726,
+   "first_loss": 146.65321731567383
+  },
+  {
+   "amp": true,
+   "micro_bs": 8,
+   "ms_train": 2723.992645740509,
+   "mem_gib": 2.10028076171875,
+   "ms_eval_per_window": 15.05955159664154,
+   "first_loss": 146.6530055999756
+  }
+ ],
+ "budget": {
+  "device": "mps",
+  "bs": 64,
+  "micro_bs": 8,
+  "amp": false,
+  "s_per_full_epoch": 970.4705700874329,
+  "hours_per_run": {
+   "8": 2.600074122152394,
+   "12": 3.8584329447895285,
+   "16": 5.116791767426663
+  },
+  "quarters_in_75min": 14
+ },
+ "subset_log": [
+  {
+   "epoch": 1,
+   "train_mae": 58.95687729281348,
+   "val_mae": 44.49805430889155,
+   "s_train": 216.49656677246094,
+   "s_per_step": 2.9256292807089315
+  },
+  {
+   "epoch": 2,
+   "train_mae": 39.62055168925105,
+   "val_mae": 36.63630155933972,
+   "s_train": 240.98914003372192,
+   "s_per_step": 3.2566100004557015
+  },
+  {
+   "epoch": 3,
+   "train_mae": 37.4530134652112,
+   "val_mae": 36.58429749349427,
+   "s_train": 255.35165405273438,
+   "s_per_step": 3.4506980277396537
+  },
+  {
+   "epoch": 4,
+   "train_mae": 36.59815232818191,
+   "val_mae": 36.95632845304764,
+   "s_train": 252.42444586753845,
+   "s_per_step": 3.411141160372141
+  },
+  {
+   "epoch": 5,
+   "train_mae": 34.81474845473831,
+   "val_mae": 37.82201300717862,
+   "s_train": 234.0069510936737,
+   "s_per_step": 3.1622560958604553
+  }
+ ],
+ "peak_gib": 3.0612335205078125,
+ "throttle_ratio": 0.9710269560733268,
+ "sustained_ms_per_step": 3286.698628116298,
+ "subset_val_mae": {
+  "1": {
+   "GWNet 5ep": 19.357,
+   "HL": 19.149,
+   "profile(d0-49)": 20.112
+  },
+  "2": {
+   "GWNet 5ep": 23.09,
+   "HL": 28.367,
+   "profile(d0-49)": 20.16
+  },
+  "3": {
+   "GWNet 5ep": 26.82,
+   "HL": 37.326,
+   "profile(d0-49)": 20.215
+  },
+  "4": {
+   "GWNet 5ep": 30.32,
+   "HL": 46.084,
+   "profile(d0-49)": 20.274
+  },
+  "5": {
+   "GWNet 5ep": 34.979,
+   "HL": 55.417,
+   "profile(d0-49)": 20.337
+  },
+  "6": {
+   "GWNet 5ep": 37.617,
+   "HL": 64.299,
+   "profile(d0-49)": 20.403
+  },
+  "7": {
+   "GWNet 5ep": 40.793,
+   "HL": 72.887,
+   "profile(d0-49)": 20.464
+  },
+  "8": {
+   "GWNet 5ep": 43.569,
+   "HL": 81.077,
+   "profile(d0-49)": 20.522
+  },
+  "9": {
+   "GWNet 5ep": 45.719,
+   "HL": 89.414,
+   "profile(d0-49)": 20.575
+  },
+  "10": {
+   "GWNet 5ep": 48.636,
+   "HL": 97.363,
+   "profile(d0-49)": 20.624
+  },
+  "11": {
+   "GWNet 5ep": 50.573,
+   "HL": 104.961,
+   "profile(d0-49)": 20.662
+  },
+  "12": {
+   "GWNet 5ep": 52.391,
+   "HL": 112.256,
+   "profile(d0-49)": 20.693
+  },
+  "avg": {
+   "GWNet 5ep": 37.822,
+   "HL": 67.384,
+   "profile(d0-49)": 20.42
+  }
+ },
+ "checks": {
+  "running on a GPU (mps)": true,
+  "device memory 3.06 GiB within limit (4.8 GiB)": true,
+  "train loss descends (epoch 5 < 0.8 \u00d7 epoch 1)": true,
+  "beats HL on subset-val (avg MAE)": true,
+  "beats the profile at horizons 1-3 (profile ignores current state)": false
+ },
+ "pass": false
+}

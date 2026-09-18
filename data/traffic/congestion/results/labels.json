@@ -1,0 +1,30 @@
+{
+ "shares": {
+  "labelled": {
+   "train": 0.88499,
+   "val": 0.86198,
+   "test": 0.85461
+  },
+  "free": {
+   "train": 0.86329,
+   "val": 0.85457,
+   "test": 0.87272
+  },
+  "heavy": {
+   "train": 0.08264,
+   "val": 0.08606,
+   "test": 0.07262
+  },
+  "congested": {
+   "train": 0.05408,
+   "val": 0.05937,
+   "test": 0.05466
+  }
+ },
+ "o_c_median": 0.1550000011920929,
+ "o_c_sources": {
+  "fitted": 278,
+  "median": 392,
+  "none": 46
+ }
+}

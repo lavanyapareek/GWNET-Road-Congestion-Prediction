@@ -1,0 +1,27 @@
+# Python
+__pycache__/
+*.pyc
+.venv/
+
+# OS
+.DS_Store
+
+# Secrets — never commit
+.streamlit/secrets.toml
+
+# Large / regenerable data — see README.md "Reproducing" for how to regenerate.
+# work/LargeST is a git clone of an external repo (has its own .git); work/factors
+# mirrors data/traffic/congestion/factors. Neither is hand-written project code.
+work/LargeST/
+work/factors/
+SanDiego_GWNet_Data/
+SanDiego_GWNet_Data.zip
+
+# data/ is mostly large binary artifacts (raw LargeST files, checkpoints, prediction
+# caches, PeMS extracts); keep only the small result/metric JSONs.
+data/*
+!data/traffic
+data/traffic/*
+!data/traffic/congestion
+data/traffic/congestion/*
+!data/traffic/congestion/results

@@ -1,0 +1,142 @@
+{
+ "zero": {
+  "overall_zero_frac": 0.02247395634039948,
+  "zero_frac_live_excl_outages": 0.01962930720233299,
+  "n_sensors_gt30": 32,
+  "n_sensors_gt50": 10,
+  "dead_sensors": [
+   146,
+   147
+  ],
+  "dead_ids": [
+   1119528,
+   1119842
+  ],
+  "n_outage_steps": 4,
+  "outage_times": [
+   "2019-03-10 02:00:00",
+   "2019-03-10 02:15:00",
+   "2019-03-10 02:30:00",
+   "2019-03-10 02:45:00"
+  ],
+  "zero_cells_by_run_length": {
+   "1-1": 5072,
+   "2-4": 10127,
+   "5-96": 17851,
+   "97-1000000": 530791
+  },
+  "frac_zero_cells_with_neighbours_flowing(>50)": 0.8666312357843766,
+  "frac_zero_cells_isolated_between_high_flow(>100)": 0.0011056878783621158
+ },
+ "999": {
+  "n999": 37,
+  "n_gt999": 0,
+  "n_invalid": 0,
+  "n_censored": 37,
+  "per_sensor": [
+   {
+    "sensor": 21,
+    "ID": 1117748,
+    "Fwy": "I5-N",
+    "Dir": "N",
+    "lanes": 6,
+    "n999": 1,
+    "implied_vphpl": 1998,
+    "max_run": 1,
+    "peak_hour_share": 1.0,
+    "nb_flow_median": 401.1363525390625,
+    "verdict": "censored"
+   },
+   {
+    "sensor": 204,
+    "ID": 1115463,
+    "Fwy": "I8-E",
+    "Dir": "E",
+    "lanes": 6,
+    "n999": 1,
+    "implied_vphpl": 1998,
+    "max_run": 1,
+    "peak_hour_share": 1.0,
+    "nb_flow_median": 393.0,
+    "verdict": "censored"
+   },
+   {
+    "sensor": 293,
+    "ID": 1120611,
+    "Fwy": "I15-N",
+    "Dir": "N",
+    "lanes": 8,
+    "n999": 10,
+    "implied_vphpl": 1498,
+    "max_run": 1,
+    "peak_hour_share": 1.0,
+    "nb_flow_median": 621.6321411132812,
+    "verdict": "censored"
+   },
+   {
+    "sensor": 307,
+    "ID": 1123003,
+    "Fwy": "I15-N",
+    "Dir": "N",
+    "lanes": 6,
+    "n999": 1,
+    "implied_vphpl": 1998,
+    "max_run": 1,
+    "peak_hour_share": 1.0,
+    "nb_flow_median": 430.5,
+    "verdict": "censored"
+   },
+   {
+    "sensor": 350,
+    "ID": 1117931,
+    "Fwy": "I15-S",
+    "Dir": "S",
+    "lanes": 6,
+    "n999": 6,
+    "implied_vphpl": 1998,
+    "max_run": 1,
+    "peak_hour_share": 0.3333333333333333,
+    "nb_flow_median": 259.84344482421875,
+    "verdict": "censored"
+   },
+   {
+    "sensor": 366,
+    "ID": 1122479,
+    "Fwy": "I15-S",
+    "Dir": "S",
+    "lanes": 7,
+    "n999": 16,
+    "implied_vphpl": 1713,
+    "max_run": 1,
+    "peak_hour_share": 1.0,
+    "nb_flow_median": 780.3181762695312,
+    "verdict": "censored"
+   },
+   {
+    "sensor": 368,
+    "ID": 1115838,
+    "Fwy": "I15-S",
+    "Dir": "S",
+    "lanes": 6,
+    "n999": 2,
+    "implied_vphpl": 1998,
+    "max_run": 1,
+    "peak_hour_share": 1.0,
+    "nb_flow_median": 651.9642333984375,
+    "verdict": "censored"
+   }
+  ],
+  "n_stuck_runs_1h": 5506,
+  "n_stuck_cells": 31011
+ },
+ "dst": {
+  "am_ramp_shift_min": {
+   "spring": 0.3,
+   "fall": -2.5
+  },
+  "zero_frac_2019-03-10_02h": 1.0,
+  "zero_frac_control_02h": 0.015581232492997199,
+  "flow_ratio_2019-11-03_01h_vs_control": 0.8921847939491272,
+  "verdict": "wallclock"
+ }
+}
