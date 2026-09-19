@@ -25,6 +25,43 @@ statistically real, and that two further feature additions (weather, incidents) 
 distinguishable from noise in aggregate — see the report for the full ablation table and the
 per-stratum nuance behind that finding.
 
+## Dashboard and agentic chatbot
+
+![Dashboard overview](presentation/charts/dashboard_overview.png)
+
+A local Streamlit app on top of R4: a live KPI row (network flow, congestion share, active
+incidents, this-window MAE vs. the model average), four synchronized map views, an auto-play
+replay control, a sensor drill-down, an in-app model-performance tab (the ablation + bootstrap
+charts from the report), and a chatbot that goes beyond simple Q&A tool-calling:
+
+![Chatbot with reasoning trace](presentation/charts/dashboard_chatbot.png)
+
+- **8 tools**, not just lookups — `get_stratified_metrics` and `rank_sensors` let it chain
+  multiple calls to answer investigative questions ("does X help when Y", "which sensors are
+  worst right now") on its own, rather than answering from a single fact.
+- **A visible reasoning trace** — every answer shows exactly which tools it called, with what
+  arguments, and what came back, in an expandable panel.
+- **It can act on the dashboard, not just describe it** — `navigate_dashboard` actually moves the
+  sidebar's date/time/horizon controls, closing the loop between the conversation and the UI.
+- **A zero-extra-API-call self-check** — flags any number in its final answer that doesn't trace
+  back to an actual tool result, before you ever see it.
+
+```mermaid
+flowchart TD
+    U["User question"] --> M["Gemini gemini-3.1-flash-lite<br/>system prompt + 8 tools"]
+    M -->|tool call/s| D{Dispatch}
+    D -->|read tools ×7| R["JSON result<br/>NaN/Inf sanitized"]
+    D -->|navigate_dashboard| A["st.session_state.pending_nav"]
+    A --> S["Sidebar date/time/horizon<br/>updated on rerun"]
+    R --> M
+    M -->|final text| V["verify_answer<br/>flags unverified figures"]
+    V --> O["Answer + reasoning trace<br/>rendered in the UI"]
+```
+
+See [PROJECT_REPORT.md](PROJECT_REPORT.md) §14–15 for the full architecture, every bug hit and
+fixed along the way (a Safari-only `chat_input` incompatibility, a NaN-in-JSON crash, and a
+whole-app auto-scroll regression), and why each fix works.
+
 ## Repository layout
 
 ```
@@ -40,10 +77,15 @@ scripts/
   export_predictions.py    Runs a finished model once over the full test set and saves a compact
                           local prediction cache for the dashboard/chatbot (no torch needed to
                           read it afterward).
-dashboard/                Local Streamlit app: 4 map views (congestion state, predicted-vs-actual
-                          flow, incidents, error magnitude), a sensor drill-down, and a Gemini-
-                          powered chatbot with tools over the predictions/metrics/incidents.
-presentation/             Chart-generation and slide-deck scripts for the progress reviews.
+dashboard/                Local Streamlit app — Accenture-purple themed, 4 views (map, sensor
+                          drill-down, model performance, chatbot) via a segmented-control switch
+                          (not st.tabs — see §14.4 in the report for why):
+  app.py                    page layout, sidebar/KPI state, view routing
+  data.py                    cached data access + ranking/stratified-metrics helpers
+  chatbot.py                  Gemini tool-calling loop, reasoning-trace + self-check helpers
+  theme.py                     palette, CSS injection, KPI-card/callout HTML helpers
+presentation/             Chart-generation and slide-deck scripts for the progress reviews, plus
+                          the dashboard screenshots above.
 pems_filter.py            Cuts a local PeMS D11 download down to the San Diego sensors/period
                           used here (raw PeMS files are not redistributed in this repo).
 data/traffic/congestion/results/

@@ -341,11 +341,15 @@ A local Streamlit dashboard and chatbot were built on top of the R4 model for th
 after weighing Streamlit Community Cloud's free-tier resource limits against a class-demo
 timeline.
 
+![Dashboard overview — hero, KPI row, map views](presentation/charts/dashboard_overview.png)
+
 **Prediction cache** (`scripts/export_predictions.py`): runs R4 once over the full 7,004-window
 test set (`conglib.load_run` rebuilds the exact model + inputs from its own checkpoint;
 `conglib.predict_mt` does a single cached forward pass), saving predicted/true flow (float16) and
 predicted/true class (int8) to a ~107MB local `.npz`. No PyTorch is needed to *read* this file
 afterward — only to build it — which keeps the dashboard itself lightweight.
+
+### 11.1 Map views and live KPIs
 
 **Map views** (`dashboard/map_view.py`, Plotly `Scattermap`, no Mapbox token needed): four
 blocks, all driven by the same sidebar date/time/horizon controls —
@@ -356,34 +360,107 @@ blocks, all driven by the same sidebar date/time/horizon controls —
 4. **Error magnitude** — |predicted − actual| flow, a model-quality view distinct from the raw
    comparison.
 
-Plus a **sensor drill-down** tab (actual-vs-predicted flow line chart for any sensor across a
-chosen day, at three horizons) and a **chatbot** tab.
+A **KPI header row** (network average predicted flow, % congested/heavy, active CHP incidents,
+this window's MAE against the model's overall average) recomputes live off whatever date/time/
+horizon the sidebar is set to — not static text. An **ops watchlist** below the maps
+(`data.top_bottlenecks`) ranks sensors congested-first for the current slot. An **auto-play**
+control (▶/⏸ + speed) steps the time slider forward automatically for a live-feeling replay. A
+**model-performance view** brings the ablation bar chart, the Gate E bootstrap forest plot, and
+the Section 9–10 findings directly into the app as FINDING/LIMITATION callout boxes, so the
+statistical case for R4 is available without leaving the dashboard. Plus a **sensor drill-down**
+view (actual-vs-predicted flow line chart for any sensor across a chosen day, at three horizons).
 
-**Chatbot** (`dashboard/chatbot.py`): originally built against the Claude API per the initial
-plan, switched on 2026-09-19 to **Google Gemini's free tier** by request. Implementation notes,
-since this is easy to get subtly wrong:
+The visual language (`dashboard/theme.py`) uses Accenture's palette (purple `#A100FF` / near-black
+/ white) for chrome — headers, cards, callouts — while deliberately leaving the traffic-domain
+semantic colors (free = green, heavy = orange, congested = red in the maps) untouched: brand color
+governs decoration, never a meaning-bearing data color.
 
-- Manual tool-use loop (mirroring the `google-genai` SDK's own internal automatic-function-calling
-  loop) rather than the SDK's built-in AFC, for full control over what Streamlit displays and
-  when the loop stops.
-- Five tools: `get_prediction` (sensor + time + horizon → predicted/actual flow and class),
-  `find_sensor` (text search by freeway/name), `get_model_metrics` (per-run MAE/RMSE/MAPE/F1),
-  `compare_runs` (the full ablation table), `get_incidents_near_sensor`.
-- **Model choice matters more than it looks.** The newest model generation available at build
-  time (`gemini-3.8-flash`, and the `gemini-flash-latest` alias, which resolves to the same
-  model under this account) carries only a **20-requests/day free quota** — easy to exhaust
-  during ordinary development, and it fails in a confusing way (looks like an intermittent 503
-  "high demand" error before the real 429 quota-exceeded error surfaces). Settled on
-  `gemini-3.1-flash-lite`, which has a materially higher free quota and was verified with a real
-  end-to-end tool-calling round trip (parallel tool calls, correct data, coherent answer).
-- Retries transient `ServerError` (5xx) and rate-limited `ClientError` (429) with exponential
-  backoff (5 attempts) — free-tier capacity is real but recovers within a couple of retries in
-  practice.
+### 11.2 Agentic chatbot architecture
+
+The chatbot (`dashboard/chatbot.py`) was originally built against the Claude API per the initial
+plan, switched on 2026-09-19 to **Google Gemini's free tier** by request, then deliberately
+upgraded from basic tool-calling into something that reads as genuinely agentic: visible
+reasoning, autonomous multi-step investigation, an ability to act on the dashboard rather than
+only describe it, and a self-check before presenting an answer.
+
+![Chatbot with an expanded, multi-tool reasoning trace](presentation/charts/dashboard_chatbot.png)
+
+```mermaid
+flowchart TD
+    U["User question<br/>(chat_input)"] --> M["Gemini gemini-3.1-flash-lite<br/>system prompt + 8 tools"]
+    M -->|tool call/s, up to 8 turns| D{Tool dispatch}
+    D -->|"7 read tools:<br/>get_prediction, find_sensor,<br/>get_model_metrics, compare_runs,<br/>get_incidents_near_sensor,<br/>get_stratified_metrics, rank_sensors"| R["JSON result<br/>(NaN/Inf sanitized)"]
+    D -->|"navigate_dashboard<br/>(the one action tool)"| A["st.session_state.pending_nav"]
+    A --> S["Sidebar date/time/horizon<br/>+ KPIs update on rerun"]
+    R -->|fed back as tool result| M
+    M -->|final text, no more tool calls| V["verify_answer<br/>flags figures not traceable<br/>to any tool result"]
+    V --> O["Rendered: reasoning trace<br/>(iter_turns) + answer +<br/>verification caption"]
+```
+
+- **Eight tools, not five** — two additions specifically enable autonomous multi-step
+  investigation instead of single-fact lookups: `get_stratified_metrics` exposes the rain/incident/
+  peak/holiday breakdown computed for Gate E (Section 11 findings) but never reachable via chat
+  before; `rank_sensors` ranks all 716 sensors at any arbitrary time by congestion, error, or flow,
+  not just the dashboard's currently-displayed slice. A compound question ("is the model worse in
+  the rain, and which sensor had the biggest error around 5pm on Dec 3?") now chains both in one
+  turn rather than requiring two separate questions.
+- **One action tool** — `navigate_dashboard` is the only tool with a side effect beyond returning
+  data: it validates the requested time against the test window, then writes
+  `st.session_state['pending_nav']`, which the dashboard resolves into the sidebar's date/time/
+  horizon on the next render. This is what turns the chatbot from something that only *describes*
+  the dashboard into something that can *act on* it.
+- **A visible reasoning trace** — `chatbot.iter_turns()` derives a per-turn `{steps, text}`
+  grouping purely from the existing conversation history at render time (no separate bookkeeping
+  structure, to avoid an entire class of state-desync bug), rendered as an expandable panel
+  listing every tool call, its arguments, and its result before the final answer.
+- **A zero-extra-API-call self-check** — `chatbot.verify_answer()` flattens every numeric value out
+  of the turn's tool results into a "known good" set, regex-extracts candidate numbers from the
+  final answer text (explicitly excluding ISO/natural-language dates, clock times, 7-digit sensor
+  IDs, bare years, and route mentions like "I-15"/"163 Merge" — see the bug notes below for why),
+  and flags anything that doesn't approximately match. Deliberately programmatic, not a second LLM
+  call, to protect the free-tier quota — with the accepted limitation that correct arithmetic the
+  model derives from two tool values (a stated delta) is flagged too, since only literal
+  tool-returned values count as ground truth.
+
+### 11.3 Bugs found and fixed
+
+Four real bugs surfaced only through actually driving the live app — none were caught by
+`streamlit.testing.v1.AppTest` alone, which is necessary but not sufficient for this kind of UI:
+
+1. **Chat input unclickable, Safari-only.** `st.chat_input` has documented cross-browser bugs when
+   nested inside `st.tabs()` (streamlit/streamlit issues #7814, #8564) — visible but unresponsive
+   to clicks/focus in some engines. Confirmed Safari-specific (worked in Chromium) by having the
+   user test both browsers on the same machine.
+2. **`400 INVALID_ARGUMENT` crash from the Gemini API on a `rank_sensors`-triggering question.**
+   `rank_sensors` returns `NaN` for sensors with no actual reading (LargeST's missing-data
+   sentinel); the first-attempt guard (`df.where(df.notna(), None)`) doesn't work — pandas
+   silently reverts `None` back to `NaN` when assigned into a float64 column. Python's own
+   `json.dumps` tolerates the resulting NaN (a non-standard literal token, allowed by default), so
+   it never crashed locally — but Gemini's own JSON parser is strict and rejects the literal `NaN`
+   token once it reaches the actual HTTP request. Fixed with a recursive sanitizer applied to
+   *every* tool's result, not just this one.
+3. **The self-check flagging real sensor names as "unverified figures."** PeMS station names embed
+   route numbers in free text ("15 SB N/O Carrol Cyn", "NB15 @ 163 Merge") indistinguishable by
+   regex alone from real metrics. Fixed by stripping any exact string the tool results themselves
+   returned (sensor labels are "known good" by construction) plus a route-number regex backstop.
+4. **Moving `chat_input` to the top level (the Safari fix) made the *entire app* auto-scroll to
+   the bottom on every load.** On the installed Streamlit version (1.64), a top-level `chat_input`
+   anywhere in the script triggers `stAppScrollToBottomContainer` for the whole page, not just the
+   chat area — the dashboard would open on "Ops Watchlist" instead of the hero/KPI row. Root cause:
+   `st.tabs()` runs (and mounts in the DOM) every tab's code on every rerun regardless of which is
+   visually selected, which is what caused both this and bug 1. **Fix: replaced `st.tabs()`
+   entirely with `st.segmented_control()` and plain `if/elif` blocks** — a plain `if/elif` is not a
+   Streamlit container at all, so only the selected view's widgets are ever mounted, eliminating
+   both bugs from one structural change rather than two separate patches.
 
 **Verification performed** (not just "it compiles"): every `data.py`/`map_view.py`/`chatbot.py`
-function was called directly against the real R4 cache and its output checked against the known
-numbers above; a full `streamlit.testing.v1.AppTest` run of the entire app hit zero exceptions
-across all three tabs; one real Gemini tool-calling round trip was run end to end.
+function was called directly against the real R4 cache and checked against known numbers; a full
+`streamlit.testing.v1.AppTest` run hit zero exceptions across every view; and — because the bugs
+above specifically don't show up that way — a real running server was driven with Playwright
+(and, for the Safari-specific bug, the user's own browser) through compound tool-chaining
+questions, a dashboard-navigation command, and a full view-switch-and-back, confirming the
+reasoning trace, the verification caption, the KPI updates, and the page's scroll position all
+behave correctly together.
 
 ## 12. Reproducing this project
 
@@ -403,8 +480,9 @@ across all three tabs; one real Gemini tool-calling round trip was run end to en
 ## 13. Status as of this report
 
 Done: Gates 0/0b/1/2/3, Stage L, Stage I, Stage F, all nine training runs, Gate E, the local
-dashboard and chatbot (verified end-to-end).
+dashboard and agentic chatbot (visual redesign, 8-tool tool-chaining, reasoning trace, self-check,
+dashboard-navigation action — all verified end-to-end, including the three bugs in Section 11.3).
 
-Open: the progress-review deck (`presentation/Progress_Review_2026-09-15.pptx`) predates R3–R6
-and Gate E and still needs updating with the numbers in Section 8–9 before the 2026-09-21 final
-demo.
+Open: the progress-review deck (`presentation/Progress_Review_2026-09-15.pptx`) predates R3–R6,
+Gate E, and the dashboard's Accenture-themed redesign, and still needs updating before the
+2026-09-21 final demo.

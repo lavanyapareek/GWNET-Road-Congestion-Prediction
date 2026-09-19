@@ -101,7 +101,7 @@ tasks = [('Training queue R2 → R6 (M2 Air, overnight)', '2026-09-15', '2026-09
          ('Final evaluation · ablation table · strata', '2026-09-17', '2026-09-18', 'M1'),
          ('Prediction export for the dashboard', '2026-09-16', '2026-09-18', 'M2'),
          ('Streamlit dashboard: map, drill-down, results', '2026-09-16', '2026-09-19', 'M3'),
-         ('Claude chatbot: tools, grounding, UI', '2026-09-16', '2026-09-19', 'M4'),
+         ('Gemini chatbot: tools, grounding, UI', '2026-09-16', '2026-09-19', 'M4'),
          ('Integration & end-to-end QA', '2026-09-19', '2026-09-20', 'M5 + all'),
          ('Deck, demo script, backup video', '2026-09-19', '2026-09-20', 'M5'),
          ('Rehearsal', '2026-09-20', '2026-09-20', 'all')]
