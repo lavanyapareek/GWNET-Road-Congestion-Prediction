@@ -20,7 +20,7 @@ plt.rcParams.update({'font.family': ['Helvetica Neue', 'Arial', 'DejaVu Sans'], 
 # 1. Full ablation bar chart (R0-R6, A1-A3, plus baselines), R4 highlighted as the shipped model.
 rows = [
     ('Time-of-day profile', 29.8, REF),
-    ('Your LSTM baseline', 26.35, REF),
+    ('Our LSTM baseline', 26.35, REF),
     ('A3 · no graph', 27.921, MUTED),
     ('A1 · road graph only', 22.901, MUTED),
     ('A2 · adaptive graph only', 21.841, MUTED),

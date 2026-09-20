@@ -35,7 +35,7 @@ for k, name in (('R0', 'GWNet R0 (full graph)'), ('A1', 'A1 road graph only'), (
     v = final[k]['test']['MAE']
     ax.plot(hs, v, color=C[k], lw=2.4, label=name, solid_capstyle='round')
     ends.append((v[-1], f'{k} {v[-1]:.1f}', C[k]))
-ax.plot(list(LSTM), list(LSTM.values()), color=C['LSTM'], lw=2.4, marker='o', ms=6, label='Your LSTM baseline',
+ax.plot(list(LSTM), list(LSTM.values()), color=C['LSTM'], lw=2.4, marker='o', ms=6, label='Our LSTM baseline',
         markeredgecolor='white', markeredgewidth=1.5)
 ends.append((LSTM[12], f'LSTM {LSTM[12]:.1f}', C['LSTM']))
 ax.scatter(list(PAPER), list(PAPER.values()), color=REF, s=46, zorder=5, label='Paper GWNet (~80 epochs)',
@@ -59,7 +59,7 @@ plt.close(fig)
 
 # 2. average test MAE per model
 rows = [('Paper GWNet (~80 ep, A6000)', 17.74, REF), ('R0 · GWNet full graph', final['R0']['test']['avg'][0], C['R0']),
-        ('A1 · road graph only', final['A1']['test']['avg'][0], C['A1']), ('Your LSTM', 26.35, C['LSTM']),
+        ('A1 · road graph only', final['A1']['test']['avg'][0], C['A1']), ('Our LSTM', 26.35, C['LSTM']),
         ('A3 · no graph', final['A3']['test']['avg'][0], C['A3']), ('Time-of-day profile', HA, REF)]
 fig, ax = plt.subplots(figsize=(7.6, 4.0))
 y = np.arange(len(rows))[::-1]
